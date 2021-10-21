@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- added Icon field in product.attribute form view -->
+    <record id="account_form_view_inherit" model="ir.ui.view">
+        <field name="name">account.form.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='price_unit']" position="after">
+                <field name="price_limit" invisible="1"/>
+            </xpath>
+             <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="price_bool"/>
+            </xpath>
+             <xpath expr="//header/button[@name='action_post']" position="after">
+                <button name="action_req_approval" string="Req For Approvals" type="object" class="oe_highlight"
+                        attrs="{'invisible':['|',('state','!=','draft'),('price_bool','=', False)]}" />
+            </xpath>
+
+            <xpath expr="//button[@name='action_post']" position="replace">
+                <button name="action_post" string="Confirm" class="oe_highlight" type="object"
+                        groups="account.group_account_invoice" attrs="{'invisible': ['|', '|','|', ('state', 'in', 'draft'),
+                        ('price_bool', '=', True),('auto_post', '=', True), ('move_type', '=', 'entry')]}"/>
+            </xpath>
+
+            <xpath expr="//header/button[@name='button_cancel']" position="after">
+                <button name="action_approval" string="Approve" type="object" class="oe_highlight" attrs="{'invisible':[('state','!=','pending')]}" groups="restrict_price_change.group_purchase_manager"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_approve_purchase_bill" model="ir.actions.act_window">
+        <field name="name">Purchase Bill Approval</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', '=', ('pending'))]</field>
+    </record>
+
+    <menuitem id="request_new" name="Requests for Approval" parent="purchase.menu_purchase_root" sequence="96"
+               groups="restrict_price_change.group_purchase_manager"/>
+    <menuitem id="request_purchase_new" name="Purchase Order Approval" parent="restrict_price_change.request_new" sequence="97"
+              action="action_approve_product_price"/>
+    <menuitem id="request_bill_new" name="Purchase Invoice Approval" parent="restrict_price_change.request_new" sequence="98"
+              action="action_approve_purchase_bill"/>
+
+</odoo>

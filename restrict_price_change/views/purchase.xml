@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="purchase_form_view_icon" model="ir.ui.view">
+        <field name="name">purchase.form.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+             <xpath expr="//header/button[@name='action_rfq_send']" position="after">
+                <button name="action_req_approval" string="Req For Approvals" type="object" class="oe_highlight" attrs="{'invisible':['|',('state','!=','draft'),('price_bool','=', False)]}" />
+            </xpath>
+             <xpath expr="//field[@name='partner_ref']" position="after">
+                <field name="price_bool" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree//field[@name='price_subtotal']" position="after">
+                <field name="price_limit" invisible="1"/>
+            </xpath>
+<!--            <xpath expr="//field[@name='order_line']//tree//field[@name='price_unit']" position="attributes">-->
+<!--                <attribute name="attrs">{'readonly':[('price_limit','=',True)]}</attribute>-->
+<!--            </xpath>-->
+            <xpath expr="//header/button[@name='action_rfq_send']" position="after">
+                <button name="action_approval" string="Approve" type="object" class="oe_highlight" attrs="{'invisible':[('state','!=','pending')]}" groups="restrict_price_change.group_purchase_manager"/>
+            </xpath>
+
+           <xpath expr="//button[@id='draft_confirm']" position="replace">
+               <button name="button_confirm" type="object" string="Confirm Orders" id="draft_confirm"
+               attrs="{'invisible': ['|', ('state', 'in', 'draft,approved'), ('price_bool', '=', True)]}"/>
+           </xpath>
+        </field>
+    </record>
+
+    <record id="action_approve_product_price" model="ir.actions.act_window">
+        <field name="name">Purchase Order Approve</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', '=', ('pending'))]</field>
+    </record>
+
+    <menuitem id="request_new" name="Requests for Approval" parent="purchase.menu_purchase_root" sequence="96"  action="action_approve_product_price" groups="restrict_price_change.group_purchase_manager"/>
+
+
+</odoo>
